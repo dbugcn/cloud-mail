@@ -310,7 +310,7 @@ function clearTurnstile() {
 
 function verifyConfigForCurrentTab() {
   if (show.value === 'register') {
-    return {mode: settingStore.settings.regVerify, open: settingStore.settings.regVerifyOpen}
+    return {mode: settingStore.settings.registerVerify, open: settingStore.settings.regVerifyOpen}
   }
   return {mode: settingStore.settings.loginVerify, open: settingStore.settings.loginVerifyOpen}
 }
