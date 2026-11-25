@@ -61,7 +61,7 @@ const routes = [
     {
         path: '/login',
         name: 'login',
-        component: () => import('@/views/login/index.vue')
+        component: () => import('@/views/login/tianyu-login.vue')
     },
     {
         path: '/test',
