@@ -213,7 +213,7 @@
 <script setup>
 import router from "@/router";
 import {useRoute} from "vue-router";
-import {computed, nextTick, onBeforeUnmount, reactive, ref, watch} from "vue";
+import {computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch} from "vue";
 import {login, register} from "@/request/login.js";
 import {websiteConfig} from "@/request/setting.js";
 import {isEmail} from "@/utils/verify-utils.js";
@@ -308,8 +308,30 @@ function clearTurnstile() {
   verifyToken = ''
 }
 
-watch(show, clearTurnstile)
+function verifyConfigForCurrentTab() {
+  if (show.value === 'register') {
+    return {mode: settingStore.settings.regVerify, open: settingStore.settings.regVerifyOpen}
+  }
+  return {mode: settingStore.settings.loginVerify, open: settingStore.settings.loginVerifyOpen}
+}
+
+function shouldVerify(mode, open) {
+  return mode === 0 || (mode === 2 && open === true)
+}
+
+function autoShowTurnstile() {
+  if (!settingStore.settings.siteKey) return
+  const {mode, open} = verifyConfigForCurrentTab()
+  if (shouldVerify(mode, open)) showTurnstile()
+}
+
+watch(show, () => {
+  clearTurnstile()
+  nextTick(autoShowTurnstile)
+})
 onBeforeUnmount(clearTurnstile)
+
+onMounted(autoShowTurnstile)
 
 function renderTurnstile(api, container) {
   turnstileId = api.render(container, {
@@ -581,6 +603,7 @@ const submitRegister = () => {
   --dot: #FFB400;
   --dot-halo: rgba(255, 180, 0, 0.30);
   --shadow: 0 20px 50px rgba(18, 60, 140, 0.12), 0 2px 8px rgba(18, 60, 140, 0.05);
+  --page-glow: rgba(255, 255, 255, 0.9);
 }
 .dark {
   --brand: #4B8DFF;
@@ -609,13 +632,14 @@ const submitRegister = () => {
   --dot: #FFC44D;
   --dot-halo: rgba(255, 196, 77, 0.28);
   --shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.40);
+  --page-glow: transparent;
 }
 html:has(.auth-page) body { background:transparent; }
 </style>
 
 <style scoped>
 .auth-page { min-height:100vh; color:var(--ink); font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei","Segoe UI",sans-serif; font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;
-  background:radial-gradient(900px 460px at 6% 8%, rgba(255,255,255,.9), transparent 62%), linear-gradient(165deg,var(--sky) 0%,var(--sky-mid) 52%,var(--sky-deep) 100%); }
+  background:radial-gradient(900px 420px at 12% -10%, var(--page-glow) 0%, transparent 60%), linear-gradient(165deg,var(--sky) 0%,var(--sky-mid) 52%,var(--sky-deep) 100%); }
 .topbar { max-width:1180px; margin:0 auto; padding:26px clamp(20px,4vw,48px) 0; display:flex; align-items:center; justify-content:space-between; gap:20px; }
 .logo { display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:var(--brand); font-size:1.0625rem; font-weight:700; }
 .logo-mark { display:grid; place-items:center; width:34px; height:34px; border-radius:9px; background:var(--brand); color:#fff; }
